@@ -3,6 +3,10 @@
 TODO
 
 ## CHANGELOG
+CRUD Destroy method
+
+- Добавлен функицонал методу Destroy
+
 Soft deletes
 
 - soft delete для модели equipment

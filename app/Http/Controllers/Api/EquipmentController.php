@@ -56,6 +56,8 @@ class EquipmentController extends Controller
      */
     public function destroy(Equipment $equipment)
     {
-        //
+        $equipment->delete();
+
+        return response()->noContent();
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\Api\EquipmentController;
+use App\Http\Controllers\Api\EquipmentTypeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,6 +15,18 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::prefix('equipment')->controller(EquipmentController::class)->group(function () {
+    Route::get('/', 'index')->name('api.equipment.index');
+    Route::get('/{equipment:id}', 'show')->name('api.equipment.show');
+    Route::post('/', 'store')->name('api.equipment.store');
+    Route::put('/{equipment:id}', 'update')->name('api.equipment.update');
+    Route::delete('/{equipment:id}', 'destroy')->name('api.equipment.destroy');
+});
+
+Route::prefix('equipment-type')->controller(EquipmentTypeController::class)->group(function () {
+    Route::get('/', 'index')->name('api.equipment-type.index');
+    Route::get('/{equipmentType:id}', 'show')->name('api.equipment-type.show');
+    Route::post('/', 'store')->name('api.equipment-type.store');
+    Route::put('/{equipmentType:id}', 'update')->name('api.equipment-type.update');
+    Route::delete('/{equipmentType:id}', 'destroy')->name('api.equipment-type.destroy');
 });

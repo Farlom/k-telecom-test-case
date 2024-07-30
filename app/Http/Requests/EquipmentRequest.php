@@ -132,21 +132,6 @@ class EquipmentRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-//        $data = array(
-//            'errors' => array(),
-//            'success' => array(),
-//        );
-//
-//        foreach ($this->toArray() as $value) {
-//            $value['equipment_type_id'] = $value['equipment_type_id'] ?? null;
-//            $value['serial_number'] = $value['serial_number'] ?? null;
-//            $value['desc'] = $value['desc'] ?? null;
-//
-//            $data['success'][] = $value;
-//        }
-//
-//        $this->merge($data);
-//        dd($this->toArray());
         $input = $this->input('equipment');
         foreach ($input as $key => &$value) {
             $value['id'] = $key;
@@ -156,5 +141,5 @@ class EquipmentRequest extends FormRequest
         $this->merge([
             'equipment' => $input,
         ]);
-
+    }
 }

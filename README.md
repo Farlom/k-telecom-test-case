@@ -3,6 +3,10 @@
 TODO
 
 ## CHANGELOG
+CRUD Bulk Store
+
+- Добавление данных (метод store) с возвратом ошибок и успехов
+
 CRUD Destroy method
 
 - Добавлен функицонал методу Destroy

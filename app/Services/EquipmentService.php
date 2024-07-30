@@ -16,6 +16,7 @@ class EquipmentService
     public function getEquipment(int $perPage = null): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
         $query = Equipment::query();
+//        request()->has()
         if (request('id')) {
             $query->where('id', request('id'));
         }

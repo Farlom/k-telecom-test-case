@@ -5,11 +5,14 @@ namespace App\Http\Requests;
 use App\Models\EquipmentType;
 use App\Rules\Mask;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Contracts\Validation\Validator;
 
 class EquipmentRequest extends FormRequest
 {
-    protected $stopOnFirstFailure = true;
+    private array $invalidData = [];
 
     /**
      * Determine if the user is authorized to make this request.
@@ -26,9 +29,30 @@ class EquipmentRequest extends FormRequest
      */
     public function rules(): array
     {
+        if ($this->method() === 'POST') {
+            return [
+                'equipment' => ['array'],
+
+                'equipment.*.equipment_type_id' => ['required', 'exists:equipment_types,id'],
+                'equipment.*.serial_number' => [
+                    'required',
+                    'string',
+                    'unique:equipment,serial_number',
+                ],
+                'equipment.*.desc' => ['required'],
+//                '*.equipment_type_id' => ['required', 'exists:equipment_types,id'],
+//                '*.serial_number' => [
+//                    'required',
+//                    'string',
+//                    'unique:equipment,serial_number',
+//                ],
+//                '*.desc' => ['required'],
+            ];
+        }
         return [
-            'equipment_type_id' => ['required', 'exists:equipment_types,id'],
-            'serial_number' => [
+            'equipment' => ['array'],
+            '*.equipment_type_id' => ['required', 'exists:equipment_types,id'],
+            '*.serial_number' => [
                 'required',
                 'string',
                 'unique:equipment,serial_number',
@@ -78,7 +102,59 @@ class EquipmentRequest extends FormRequest
                     }
                 }
             ],
-            'desc' => ['required'],
+            '*.desc' => ['required'],
         ];
     }
+
+    public function invalid(): array
+    {
+        return $this->invalidData;
+    }
+
+    public function validated($key = null, $default = null)
+    {
+        return $this->input('equipment');
+    }
+
+    protected function failedValidation(Validator $validator): void
+    {
+        $input = $this->input('equipment');
+        foreach ($validator->errors()->toArray() as $key => $message) {
+            $index = explode('.', $key)[1];
+            unset($input[$index]);
+            $this->invalidData[$index]['id'] = $index;
+            $this->invalidData[$index]['message'][] = $message[0];
+        }
+        $this->merge([
+            'equipment' => $input,
+        ]);
+    }
+
+    protected function prepareForValidation(): void
+    {
+//        $data = array(
+//            'errors' => array(),
+//            'success' => array(),
+//        );
+//
+//        foreach ($this->toArray() as $value) {
+//            $value['equipment_type_id'] = $value['equipment_type_id'] ?? null;
+//            $value['serial_number'] = $value['serial_number'] ?? null;
+//            $value['desc'] = $value['desc'] ?? null;
+//
+//            $data['success'][] = $value;
+//        }
+//
+//        $this->merge($data);
+//        dd($this->toArray());
+        $input = $this->input('equipment');
+        foreach ($input as $key => &$value) {
+            $value['id'] = $key;
+            $value['valid'] = true;
+            $value['message'] = null;
+        }
+        $this->merge([
+            'equipment' => $input,
+        ]);
+
 }

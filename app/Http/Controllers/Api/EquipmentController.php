@@ -5,10 +5,14 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\EquipmentRequest;
 use App\Http\Resources\EquipmentCollection;
+use App\Http\Resources\EquipmentErrorResource;
 use App\Http\Resources\EquipmentResource;
+use App\Http\Resources\EquipmentStoreResource;
 use App\Models\Equipment;
 use App\Services\EquipmentService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Validator;
 
 class EquipmentController extends Controller
 {
@@ -27,8 +31,22 @@ class EquipmentController extends Controller
      */
     public function store(EquipmentRequest $request)
     {
-        $equipment = Equipment::create($request->validated());
-        return new EquipmentResource($equipment);
+        $validData = [];
+        $invalidData = [];
+
+        foreach ($request->validated() as $value) {
+                $equipment = Equipment::create($value);
+                $validData[] = $equipment;
+        }
+
+        foreach ($request->invalid() as $key => $value) {
+            $invalidData[$key] = new Request($value);
+        }
+
+        return response()->json([
+            'errors' => EquipmentErrorResource::collection(collect($invalidData)),
+            'success' => EquipmentResource::collection(collect($validData)),
+        ]);
     }
 
     /**

@@ -1,6 +1,24 @@
 ## Запуск 
 
-TODO
+`https://github.com/Farlom/k-telecom-test-case.git`
+
+`cd ./k-telecom-test-case`
+
+`composer install`
+
+`cp .env.example .env`
+
+`php artisan key:generate`
+
+`php artisan migrate`
+
+`php artisan db:seed`
+
+`php artisan serve`
+
+## Postman
+
+https://www.postman.com/research-meteorologist-45273918/workspace/public/collection/27303078-40824eb1-809c-4e90-8ddc-487ef8b2b194
 
 ## CHANGELOG
 

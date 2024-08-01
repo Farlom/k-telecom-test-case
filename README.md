@@ -1,6 +1,6 @@
 ## Запуск 
 
-`https://github.com/Farlom/k-telecom-test-case.git`
+`git clone https://github.com/Farlom/k-telecom-test-case.git`
 
 `cd ./k-telecom-test-case`
 

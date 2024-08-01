@@ -4,20 +4,29 @@ namespace App\Http\Requests;
 
 use App\Models\EquipmentType;
 use App\Rules\Mask;
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Foundation\Http\FormRequest;
 
-class EquipmentRequest extends FormRequest
+class EquipmentBulkRequest extends FormRequest
 {
+    private array $invalidData = [];
+
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
         return true;
+    }
+
+    public function invalid(): array
+    {
+        return $this->invalidData;
+    }
+
+    public function validated($key = null, $default = null)
+    {
+        return $this->input('equipment');
     }
 
     /**
@@ -28,13 +37,16 @@ class EquipmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'equipment_type_id' => ['required', 'exists:equipment_types,id'],
-            'serial_number' => [
+            'equipment' => ['array'],
+
+            'equipment.*.equipment_type_id' => ['required', 'exists:equipment_types,id'],
+            'equipment.*.serial_number' => [
                 'required',
                 'string',
                 'unique:equipment,serial_number',
                 function ($attribute, $value, $fail) {
-                    $mask = EquipmentType::findOrFail($this->input('equipment_type_id'))->mask;
+                    $index = explode('.', $attribute)[1];
+                    $mask = EquipmentType::findOrFail($this->input('equipment.' . $index . '.equipment_type_id'))->mask;
                     if (strlen($mask) !== strlen($value)) {
                         $fail(':attribute must be a valid mask of ' . $mask . '.');
                     } else {
@@ -76,7 +88,34 @@ class EquipmentRequest extends FormRequest
                     }
                 }
             ],
-            'desc' => ['required'],
+            'equipment.*.desc' => ['required'],
         ];
+    }
+
+    protected function failedValidation(Validator $validator): void
+    {
+        $input = $this->input('equipment');
+        foreach ($validator->errors()->toArray() as $key => $message) {
+            $index = explode('.', $key)[1];
+            unset($input[$index]);
+            $this->invalidData[$index]['id'] = $index;
+            $this->invalidData[$index]['message'][] = $message[0];
+        }
+        $this->merge([
+            'equipment' => $input,
+        ]);
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $input = $this->input('equipment');
+        foreach ($input as $key => &$value) {
+            $value['id'] = $key;
+            $value['valid'] = true;
+            $value['message'] = null;
+        }
+        $this->merge([
+            'equipment' => $input,
+        ]);
     }
 }

@@ -7,6 +7,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class EquipmentResource extends JsonResource
 {
+    public static $wrap = null;
     /**
      * @var bool
      */

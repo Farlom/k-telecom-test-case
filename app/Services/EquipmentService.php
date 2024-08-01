@@ -2,7 +2,14 @@
 
 namespace App\Services;
 
+use App\Http\Requests\EquipmentBulkRequest;
+use App\Http\Requests\EquipmentRequest;
+use App\Http\Resources\EquipmentErrorResource;
+use App\Http\Resources\EquipmentResource;
 use App\Models\Equipment;
+use App\Models\EquipmentType;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 /**
  *
@@ -10,6 +17,8 @@ use App\Models\Equipment;
 class EquipmentService
 {
     /**
+     * get equipment list
+     *
      * @param int|null $perPage
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
@@ -37,5 +46,53 @@ class EquipmentService
         return $query->paginate($perPage);
     }
 
+    /**
+     * get equipment types list
+     *
+     * @param int|null $perPage
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     */
+    public function getEquipmentTypes(int $perPage = null): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    {
+        $query = EquipmentType::query();
+//        request()->has()
+        if (request('id')) {
+            $query->where('id', request('id'));
+        }
 
+        if (request('name')) {
+            $query->where('name', request('name'));
+
+        }
+
+        if (request('mask')) {
+            $query->where('mask', request('mask'));
+        }
+
+        return $query->paginate($perPage);
+    }
+
+    /**
+     * @param EquipmentBulkRequest $request
+     * @return JsonResponse
+     */
+    public function store(EquipmentBulkRequest $request): JsonResponse
+    {
+        $validData = [];
+        $invalidData = [];
+
+        foreach ($request->validated() as $value) {
+            $equipment = Equipment::create($value);
+            $validData[] = $equipment;
+        }
+
+        foreach ($request->invalid() as $key => $value) {
+            $invalidData[$key] = new Request($value);
+        }
+
+        return response()->json([
+            'errors' => EquipmentErrorResource::collection(collect($invalidData)),
+            'success' => EquipmentResource::collection(collect($validData)),
+        ]);
+    }
 }

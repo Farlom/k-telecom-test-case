@@ -3,76 +3,81 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\EquipmentBulkRequest;
 use App\Http\Requests\EquipmentRequest;
-use App\Http\Resources\EquipmentCollection;
-use App\Http\Resources\EquipmentErrorResource;
 use App\Http\Resources\EquipmentResource;
-use App\Http\Resources\EquipmentStoreResource;
 use App\Models\Equipment;
 use App\Services\EquipmentService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\Response;
 
 class EquipmentController extends Controller
 {
+
     /**
-     * Display a listing of the resource.
-     *
+     * @param EquipmentService $service
      */
-    public function index(EquipmentService $service) // TODO "либо указанием параметра q"
+    public function __construct(protected EquipmentService $service)
     {
-//        return new EquipmentCollection($service->getEquipment());
-        return EquipmentResource::collection($service->getEquipment());
+
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Display a listing of the resource.
+     *
+     * @return EquipmentResource|JsonResource
      */
-    public function store(EquipmentRequest $request)
+    public function index(): EquipmentResource|JsonResource
     {
-        $validData = [];
-        $invalidData = [];
+        return EquipmentResource::collection($this->service->getEquipment(5));
+    }
 
-        foreach ($request->validated() as $value) {
-                $equipment = Equipment::create($value);
-                $validData[] = $equipment;
-        }
 
-        foreach ($request->invalid() as $key => $value) {
-            $invalidData[$key] = new Request($value);
-        }
-
-        return response()->json([
-            'errors' => EquipmentErrorResource::collection(collect($invalidData)),
-            'success' => EquipmentResource::collection(collect($validData)),
-        ]);
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param EquipmentBulkRequest $request
+     * @return JsonResponse
+     */
+    public function store(EquipmentBulkRequest $request): JsonResponse
+    {
+        $response = $this->service->store($request);
+        return $response;
     }
 
     /**
      * Display the specified resource.
+     *
+     * @param Equipment $equipment
+     * @return EquipmentResource|JsonResource
      */
-    public function show(Equipment $equipment)
+    public function show(Equipment $equipment): EquipmentResource|JsonResource
     {
-        // TODO findOrFail
-//        dd(Equipment::findOrFail($equipment->id));
         return new EquipmentResource($equipment);
     }
 
     /**
      * Update the specified resource in storage.
+     *
+     * @param EquipmentRequest $request
+     * @param Equipment $equipment
+     * @return EquipmentResource|JsonResource
      */
-    public function update(EquipmentRequest $request, Equipment $equipment)
+    public function update(EquipmentRequest $request, Equipment $equipment): EquipmentResource|JsonResource
     {
-        //
         $equipment->update($request->validated());
-//        dd($equipment);
+
+        return new EquipmentResource($equipment);
     }
 
     /**
      * Remove the specified resource from storage.
+     *
+     * @param Equipment $equipment
+     * @return Response
      */
-    public function destroy(Equipment $equipment)
+    public function destroy(Equipment $equipment): Response
     {
         $equipment->delete();
 

@@ -3,6 +3,9 @@
 TODO
 
 ## CHANGELOG
+
+FINAL
+
 CRUD Bulk Store
 
 - Добавление данных (метод store) с возвратом ошибок и успехов

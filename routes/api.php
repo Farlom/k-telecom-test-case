@@ -15,13 +15,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::prefix('equipment')->controller(EquipmentController::class)->group(function () {
-    Route::get('/', 'index')->name('api.equipment.index');
-    Route::get('/{equipment:id}', 'show')->name('api.equipment.show');
-    Route::post('/', 'store')->name('api.equipment.store');
-    Route::put('/{equipment:id}', 'update')->name('api.equipment.update');
-    Route::delete('/{equipment:id}', 'destroy')->name('api.equipment.destroy');
-});
+Route::apiResource('equipment', EquipmentController::class);
 
 Route::get('equipment-type', [EquipmentTypeController::class, 'index'])->name('api.equipment-type.index');
 

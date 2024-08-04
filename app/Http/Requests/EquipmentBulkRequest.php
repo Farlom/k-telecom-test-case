@@ -94,7 +94,7 @@ class EquipmentBulkRequest extends FormRequest
 
                 }
             ],
-            'equipment.*.desc' => ['required'],
+            'equipment.*.desc' => ['nullable'],
         ];
     }
 

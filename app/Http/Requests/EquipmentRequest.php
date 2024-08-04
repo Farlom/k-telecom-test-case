@@ -76,7 +76,7 @@ class EquipmentRequest extends FormRequest
                     }
                 }
             ],
-            'desc' => ['required'],
+            'desc' => ['nullable'],
         ];
     }
 }

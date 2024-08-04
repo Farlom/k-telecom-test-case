@@ -23,7 +23,7 @@ class EquipmentTypeController extends Controller
      */
     public function index(): EquipmentTypeResource|JsonResource
     {
-        return EquipmentTypeResource::collection($this->service->getEquipmentTypes());
+        return EquipmentTypeResource::collection($this->service->getEquipmentTypes(5));
     }
 
     /**

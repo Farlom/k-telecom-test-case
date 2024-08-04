@@ -23,10 +23,5 @@ Route::prefix('equipment')->controller(EquipmentController::class)->group(functi
     Route::delete('/{equipment:id}', 'destroy')->name('api.equipment.destroy');
 });
 
-Route::prefix('equipment-type')->controller(EquipmentTypeController::class)->group(function () {
-    Route::get('/', 'index')->name('api.equipment-type.index');
-    Route::get('/{equipmentType:id}', 'show')->name('api.equipment-type.show');
-    Route::post('/', 'store')->name('api.equipment-type.store');
-    Route::put('/{equipmentType:id}', 'update')->name('api.equipment-type.update');
-    Route::delete('/{equipmentType:id}', 'destroy')->name('api.equipment-type.destroy');
-});
+Route::get('equipment-type', [EquipmentTypeController::class, 'index'])->name('api.equipment-type.index');
+

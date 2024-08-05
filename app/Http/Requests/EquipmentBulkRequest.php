@@ -6,6 +6,7 @@ use App\Models\EquipmentType;
 use App\Rules\Mask;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class EquipmentBulkRequest extends FormRequest
 {
@@ -37,62 +38,17 @@ class EquipmentBulkRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'equipment' => ['array'],
+            'equipment' => ['required', 'array'],
 
             'equipment.*.equipment_type_id' => ['required', 'exists:equipment_types,id'],
             'equipment.*.serial_number' => [
                 'required',
                 'string',
-                'unique:equipment,serial_number',
-                function ($attribute, $value, $fail) {
-                    $index = explode('.', $attribute)[1];
-                    if (EquipmentType::where('id', $this->input('equipment.' . $index . '.equipment_type_id'))->exists()) {
-                        $mask = EquipmentType::findOrFail($this->input('equipment.' . $index . '.equipment_type_id'))->mask;
-                        if (strlen($mask) !== strlen($value)) {
-                            $fail(':attribute must be a valid mask of ' . $mask . '.');
-                        } else {
-
-                            foreach (str_split($mask) as $i => $char) {
-                                switch ($char) {
-                                    case 'N': // N – цифра от 0 до 9;
-                                        if (!is_numeric($value[$i])) {
-                                            $fail(':attribute must be a valid mask of ' . $mask . '.');
-                                        }
-                                        break;
-                                    case 'A': // A – прописная буква латинского алфавита;
-                                        if (!preg_match('/[A-Z]/', $value[$i])) {
-                                            $fail(':attribute must be a valid mask of ' . $mask . '.');
-                                        }
-                                        break;
-                                    case 'a': // a – строчная буква латинского алфавита;
-                                        if (!preg_match('/[a-z]/', $value[$i])) {
-                                            $fail(':attribute must be a valid mask of ' . $mask . '.');
-                                        }
-                                        break;
-                                    case 'X': // X – прописная буква латинского алфавита либо цифра от 0 до 9;
-                                        if (!is_numeric($value[$i]))
-                                            if (!preg_match('/[A-Z]/', $value[$i])) {
-                                                $fail(':attribute must be a valid mask of ' . $mask . '.');
-                                            }
-                                        break;
-                                    case 'Z': // Z –символ из списка: “-“, “_”, “@”.
-                                        if ($value[$i] !== '-') {
-                                            if ($value[$i] !== '_') {
-                                                if ($value[$i] !== '@') {
-                                                    $fail(':attribute must be a valid mask of ' . $mask . '.');
-                                                }
-                                            }
-                                        }
-                                        break;
-                                }
-                            }
-                        }
-                    }
-                    else {
-                        $fail(EquipmentType::where('id', $index)->exists() ? "123" : '321');
-                    }
-
-                }
+                Rule::unique('equipment', 'serial_number')->where(function ($query) {
+                    return $query->where('equipment_type_id', $this->input('equipment_type_id'));
+                }),
+//                'unique:equipment,serial_number',
+                new Mask(),
             ],
             'equipment.*.desc' => ['nullable'],
         ];

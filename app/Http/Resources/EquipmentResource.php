@@ -22,7 +22,7 @@ class EquipmentResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'equipment_type' => $this->equipmentType,
+            'equipment_type' => new EquipmentTypeResource($this->equipmentType),
             'serial_number' => $this->serial_number,
             'desc' => $this->desc,
             'created_at' => $this->created_at,

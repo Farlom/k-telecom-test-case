@@ -7,9 +7,16 @@ use Closure;
 use Dflydev\DotAccessData\Data;
 use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Validation\Rule;
 
 class Mask implements ValidationRule
 {
+    private int|null $index;
+    public function __construct(int|null $index = null)
+    {
+        $this->index = $index;
+    }
+
     /**
      * Run the validation rule.
      *
@@ -17,17 +24,16 @@ class Mask implements ValidationRule
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if ($attribute === 'serial_number') {
-            $requestAttrubute = 'equipment_type_id';
-            $equipmentType = EquipmentType::where('id', request($requestAttrubute))->exists();
-        } else {
-            // equipment.*.serial_number
-            $index = explode('.', $attribute)[1];
-            $requestAttrubute = 'equipment.' . $index . '.equipment_type_id';
-            $equipmentType = EquipmentType::where('id', request($requestAttrubute))->exists();
+        if ($this->index)
+        {
+            $requestAttribute = 'equipment.' . $this->index . '.equipment_type_id';
         }
-        if ($equipmentType) {
-            $mask = EquipmentType::findOrFail(request($requestAttrubute))->mask;
+        else {
+            $requestAttribute = 'equipment_type_id';
+        }
+
+        if (EquipmentType::where('id', request($requestAttribute))->exists()) {
+            $mask = EquipmentType::findOrFail(request($requestAttribute))->mask;
             if (strlen($mask) !== strlen($value)) {
                 $fail(':attribute must be a valid mask of ' . $mask . '.');
             } else {
@@ -55,7 +61,7 @@ class Mask implements ValidationRule
                             break;
                         case 'Z': // Z –символ из списка: “-“, “_”, “@”.
                             if (!preg_match('/[-_@]/', $value[$i])) {
-                                $fail(':attribute must be a valid mask of ' . $mask . '.Z');
+                                $fail(':attribute must be a valid mask of ' . $mask . '.');
 
                             }
                             break;
@@ -63,7 +69,7 @@ class Mask implements ValidationRule
                 }
             }
         } else {
-            $fail(':attribute does not exist.');
+            $fail('Selected equipment_type does not exist.');
         }
     }
 }

@@ -2,13 +2,9 @@
 
 namespace App\Http\Requests;
 
-use App\Models\EquipmentType;
 use App\Rules\Mask;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use Illuminate\Contracts\Validation\Validator;
 
 class EquipmentRequest extends FormRequest
 {
@@ -32,10 +28,12 @@ class EquipmentRequest extends FormRequest
             'serial_number' => [
                 'required',
                 'string',
-                'unique:equipment,serial_number',
+                Rule::unique('equipment', 'serial_number')->where(function ($query) {
+                    return $query->where('equipment_type_id', $this->equipment_type_id);
+                })->ignore($this->route()->equipment->id),
                 new Mask(),
             ],
-            'desc' => ['nullable'],
+            'desc' => ['nullable', 'string'],
         ];
     }
 }

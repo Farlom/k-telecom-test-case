@@ -6,6 +6,7 @@ use App\Models\EquipmentType;
 use App\Rules\Mask;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Fluent;
 use Illuminate\Validation\Rule;
 
 class EquipmentBulkRequest extends FormRequest
@@ -39,32 +40,42 @@ class EquipmentBulkRequest extends FormRequest
     {
         return [
             'equipment' => ['required', 'array'],
-
             'equipment.*.equipment_type_id' => ['required', 'exists:equipment_types,id'],
-            'equipment.*.serial_number' => [
-                'required',
-                'string',
-                Rule::unique('equipment', 'serial_number')->where(function ($query) {
-                    return $query->where('equipment_type_id', $this->input('equipment_type_id'));
-                }),
-//                'unique:equipment,serial_number',
-                new Mask(),
-            ],
-            'equipment.*.desc' => ['nullable'],
+            'equipment.*.serial_number' => Rule::forEach(function ($value, $attribute) {
+                $index = explode('.', $attribute)[1];
+                return [
+                    'required',
+                    'string',
+                    Rule::unique('equipment', 'serial_number')->where(function ($query) use ($index) {
+                        return $query->where('equipment_type_id', $this->input('equipment.' . $index . '.equipment_type_id'));
+                    }),
+                    new Mask($index),
+                ];
+            }),
+            'equipment.*.desc' => ['nullable', 'string'],
         ];
     }
 
     protected function failedValidation(Validator $validator): void
     {
         $input = $this->input('equipment');
-        foreach ($validator->errors()->toArray() as $key => $message) {
-            $index = explode('.', $key)[1];
-            unset($input[$index]);
-            $this->invalidData[$index]['id'] = $index;
-            $this->invalidData[$index]['message'][] = $message[0];
+        if ($input) {
+            foreach ($validator->errors()->toArray() as $key => $message) {
+                $index = explode('.', $key)[1];
+                unset($input[$index]);
+                $this->invalidData[$index]['id'] = $index;
+                $this->invalidData[$index]['message'][] = $message[0];
+            }
+            $this->merge([
+                'equipment' => $input,
+            ]);
+        } else {
+            $this->invalidData[0]['id'] = 0;
+            $this->invalidData[0]['message'] = $validator->errors()->toArray()['equipment'][0];
+            $this->merge([
+                'equipment' => [],
+            ]);
         }
-        $this->merge([
-            'equipment' => $input,
-        ]);
+
     }
 }

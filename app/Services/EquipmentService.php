@@ -54,7 +54,7 @@ class EquipmentService
             }
         }
 
-        return $query->paginate($perPage);
+        return $query->paginate($perPage)->withQueryString();
     }
 
     /**
@@ -91,7 +91,7 @@ class EquipmentService
             }
         }
 
-        return $query->paginate($perPage);
+        return $query->paginate($perPage)->withQueryString();
     }
 
     /**

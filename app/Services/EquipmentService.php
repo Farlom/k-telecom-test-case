@@ -25,22 +25,33 @@ class EquipmentService
     public function getEquipment(int $perPage = null): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
         $query = Equipment::query();
-//        request()->has()
-        if (request('id')) {
-            $query->where('id', request('id'));
-        }
 
-        if (request('equipment_type_id')) {
-            $query->where('equipment_type_id', request('equipment_type_id'));
+        if (request('q')) {
+            $columns = array(
+                'serial_number',
+                'desc',
+            );
 
-        }
+            foreach ($columns as $column) {
+                $query->orWhere($column, 'like', '%' . request('q') . '%');
+            }
+        } else {
+            if (request('id')) {
+                $query->where('id', request('id'));
+            }
 
-        if (request('serial_number')) {
-            $query->where('serial_number', request('serial_number'));
-        }
+            if (request('equipment_type_id')) {
+                $query->where('equipment_type_id', request('equipment_type_id'));
 
-        if (request('desc')) {
-            $query->where('desc', request('desc'));
+            }
+
+            if (request('serial_number')) {
+                $query->where('serial_number', request('serial_number'));
+            }
+
+            if (request('desc')) {
+                $query->where('desc', request('desc'));
+            }
         }
 
         return $query->paginate($perPage);
@@ -52,21 +63,32 @@ class EquipmentService
      * @param int|null $perPage
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
-    public function getEquipmentTypes(int $perPage = null): \Illuminate\Contracts\Pagination\LengthAwarePaginator
+    public
+    function getEquipmentTypes(int $perPage = null): \Illuminate\Contracts\Pagination\LengthAwarePaginator
     {
         $query = EquipmentType::query();
-//        request()->has()
-        if (request('id')) {
-            $query->where('id', request('id'));
-        }
 
-        if (request('name')) {
-            $query->where('name', request('name'));
+        if (request('q')) {
+            $columns = array(
+                'name',
+                'mask',
+            );
 
-        }
+            foreach ($columns as $column) {
+                $query->orWhere($column, 'like', '%' . request('q') . '%');
+            }
+        } else {
+            if (request('id')) {
+                $query->where('id', request('id'));
+            }
 
-        if (request('mask')) {
-            $query->where('mask', request('mask'));
+            if (request('name')) {
+                $query->where('name', request('name'));
+            }
+
+            if (request('mask')) {
+                $query->where('mask', request('mask'));
+            }
         }
 
         return $query->paginate($perPage);
@@ -76,7 +98,8 @@ class EquipmentService
      * @param EquipmentBulkRequest $request
      * @return JsonResponse
      */
-    public function store(EquipmentBulkRequest $request): JsonResponse
+    public
+    function store(EquipmentBulkRequest $request): JsonResponse
     {
         $validData = [];
         $invalidData = [];

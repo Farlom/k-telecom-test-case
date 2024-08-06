@@ -67,17 +67,4 @@ class EquipmentBulkRequest extends FormRequest
             'equipment' => $input,
         ]);
     }
-
-    protected function prepareForValidation(): void
-    {
-        $input = $this->input('equipment');
-        foreach ($input as $key => &$value) {
-            $value['id'] = $key;
-            $value['valid'] = true;
-            $value['message'] = null;
-        }
-        $this->merge([
-            'equipment' => $input,
-        ]);
-    }
 }

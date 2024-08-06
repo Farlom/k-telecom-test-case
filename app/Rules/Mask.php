@@ -24,14 +24,13 @@ class Mask implements ValidationRule
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if ($this->index)
+        if ($this->index !== null)
         {
             $requestAttribute = 'equipment.' . $this->index . '.equipment_type_id';
         }
         else {
             $requestAttribute = 'equipment_type_id';
         }
-
         if (EquipmentType::where('id', request($requestAttribute))->exists()) {
             $mask = EquipmentType::findOrFail(request($requestAttribute))->mask;
             if (strlen($mask) !== strlen($value)) {
